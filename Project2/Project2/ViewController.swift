@@ -9,14 +9,19 @@
 import UIKit
 
 class ViewController: UIViewController {
-
+  
   @IBOutlet var button1: UIButton!
   @IBOutlet var button2: UIButton!
   @IBOutlet var button3: UIButton!
   
+  private let maxNumberOfQuestions = 10
+  
+  private var shouldOpenFinalPopup = false
   var countries = [String]()
   var score = 0
   var correctAnswer = 0
+  var questionsAnswered = 0
+  
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -38,42 +43,81 @@ class ViewController: UIViewController {
     askQuestion()
   }
   
-  func askQuestion() {
+  private func setTitle() {
+    navigationItem.title = "Flag of \(getCountryName())? Score: \(score)"
+  }
+  
+  private func getCountryName() -> String {
+    let countryToGuess = countries[correctAnswer];
+    if (countryToGuess == "uk" || countryToGuess == "us") {
+      return countryToGuess.uppercased()
+    }
+    return countries[correctAnswer].capitalized
+  }
+  
+  private func askQuestion() {
     countries.shuffle()
     correctAnswer = Int.random(in: 0...2)
-    title = countries[correctAnswer].uppercased()
     
     button1.setImage(UIImage(named: countries[0]), for: .normal)
     button2.setImage(UIImage(named: countries[1]), for: .normal)
     button3.setImage(UIImage(named: countries[2]), for: .normal)
+    
+    setTitle()
   }
-
-  @IBAction func buttonTapped(_ sender: UIButton) {
-    var title:String
-    
-    if sender.tag == correctAnswer {
-      title = "Correct"
-      score += 1
-    } else {
-      title = "Wrong"
-      score -= 1
-    }
-    
+  
+  private func showPopup(with message: String, title: String, buttonLabel: String, handler: @escaping (UIAlertAction) -> Void) {
     let ac = UIAlertController(
       title: title,
-      message: "Your score is \(score)",
+      message: message,
       preferredStyle: .alert
     )
     
     ac.addAction(UIAlertAction(
-      title: "Continue",
+      title: buttonLabel,
       style: .default,
-      handler: { action in
-        self.askQuestion()
-      }
+      handler: handler
     ))
     
     present(ac, animated: true)
   }
+  
+  @IBAction func buttonTapped(_ sender: UIButton) {
+    if sender.tag == correctAnswer {
+      score += 1
+      
+      if (questionsAnswered < maxNumberOfQuestions) {
+        askQuestion()
+      }
+      
+    } else {
+      score -= 1
+      let message = "You're wrong! It's the flag of \(countries[sender.tag].capitalized)"
+      showPopup(with: message, title: "Oops!", buttonLabel: "Continue") { action in
+        self.askQuestion()
+        if (self.shouldOpenFinalPopup) {
+          self.showFinalPopup()
+          self.shouldOpenFinalPopup = false
+        }
+      }
+    }
+    
+    questionsAnswered += 1
+    
+    if questionsAnswered == maxNumberOfQuestions {
+      if presentedViewController == nil {
+        showFinalPopup()
+      } else {
+        shouldOpenFinalPopup = true
+      }
+    }
+  }
+  
+  private func showFinalPopup() {
+    showPopup(with: "Your score is: \(score)/\(maxNumberOfQuestions)", title: "Game over", buttonLabel: "Play again") { action in
+      self.score = 0
+      self.questionsAnswered = 0
+      self.askQuestion()
+    }
+  }
 }
-
