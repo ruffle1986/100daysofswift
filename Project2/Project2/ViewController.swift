@@ -44,7 +44,7 @@ class ViewController: UIViewController {
   }
   
   private func setTitle() {
-    navigationItem.title = "Flag of \(getCountryName())? Score: \(score)"
+    navigationItem.title = "Flag of \(getCountryName())?"
   }
   
   private func getCountryName() -> String {
@@ -77,6 +77,21 @@ class ViewController: UIViewController {
       title: buttonLabel,
       style: .default,
       handler: handler
+    ))
+    
+    present(ac, animated: true)
+  }
+  
+  private func showPopup(with message: String, title: String, buttonLabel: String) {
+    let ac = UIAlertController(
+      title: title,
+      message: message,
+      preferredStyle: .alert
+    )
+    
+    ac.addAction(UIAlertAction(
+      title: buttonLabel,
+      style: .default
     ))
     
     present(ac, animated: true)
@@ -120,4 +135,9 @@ class ViewController: UIViewController {
       self.askQuestion()
     }
   }
+  
+  @IBAction func showScoreClicked(_ sender: UIBarButtonItem) {
+    showPopup(with: "\(score)/\(maxNumberOfQuestions)", title: "Your score is", buttonLabel: "Close")
+  }
+  
 }
