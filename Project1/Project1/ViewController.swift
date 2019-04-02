@@ -30,6 +30,12 @@ class ViewController: UITableViewController {
       }
       pictures = pictures.sorted(by: <)
     }
+    
+    navigationItem.rightBarButtonItem = UIBarButtonItem(
+      barButtonSystemItem: .action,
+      target: self,
+      action: #selector(doRecommend)
+    )
   }
   
   override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -46,9 +52,18 @@ class ViewController: UITableViewController {
     if let vc = storyboard?
         .instantiateViewController(withIdentifier: "Detail")
         as? DetailViewController {
-      vc.selectedImage = "Picture \(indexPath.row + 1) of \(pictures.count)"
+      vc.selectedImage = pictures[indexPath.row]
+      vc.title = "Picture of \(indexPath.row + 1) / \(pictures.count)"
       navigationController?.pushViewController(vc, animated: true)
     }
+  }
+  
+  @objc func doRecommend() {
+    let activityController = UIActivityViewController(
+      activityItems: ["Check out Ruff`s awesome storm viewer app."],
+      applicationActivities: []
+    )
+    present(activityController, animated: true)
   }
 }
 
